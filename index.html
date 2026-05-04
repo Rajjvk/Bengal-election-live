@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 West Bengal Election Results - Live Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>2026 West Bengal Assembly Election Results</h1>
+            <p class="subtitle">Live Election Dashboard</p>
+            <div class="info-banner">
+                <span class="last-updated">Last Updated: <span id="timestamp">--:--:--</span></span>
+                <span class="total-seats">Total Seats: <span id="totalSeats">294</span></span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="dashboard-grid">
+                <!-- Pie Chart Section -->
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <canvas id="seatChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="stats-container">
+                    <h2>Party Performance</h2>
+                    <div class="stats-list" id="statsList">
+                        <!-- Stats populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Results Table -->
+            <div class="table-section">
+                <h2>Detailed Results by Party</h2>
+                <table class="results-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Party Name</th>
+                            <th>Seats Won</th>
+                            <th>Percentage</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Table rows populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Data Sources -->
+            <div class="sources-section">
+                <h3>Data Sources</h3>
+                <ul class="sources-list" id="sourcesList">
+                    <!-- Sources populated by JavaScript -->
+                </ul>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2026 West Bengal Election Dashboard | Data collected from official sources</p>
+        </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
