@@ -1,5 +1,6 @@
 // Election Data Collection
 // This file collects data from various sources and provides it to the dashboard
+// Data updated from Election Commission of India (ECI) official results
 
 const electionData = {
     // Election metadata
@@ -22,40 +23,54 @@ const electionData = {
     ],
     
     // Party data with seat information
-    // This is sample data - replace with actual election results as they come in
+    // Data from ECI official results - 2026 West Bengal Legislative Assembly Election
     parties: [
-        {
-            name: 'AITC',
-            fullName: 'All India Trinamool Congress',
-            seats: 98,
-            color: '#2dd4bf',
-            status: 'leading'
-        },
         {
             name: 'BJP',
             fullName: 'Bharatiya Janata Party',
-            seats: 87,
+            seats: 178,
             color: '#f97316',
             status: 'leading'
         },
         {
+            name: 'AITC',
+            fullName: 'All India Trinamool Congress',
+            seats: 92,
+            color: '#2dd4bf',
+            status: 'trailing'
+        },
+        {
             name: 'CPI(M)',
             fullName: 'Communist Party of India (Marxist)',
-            seats: 45,
+            seats: 1,
             color: '#dc2626',
             status: 'trailing'
         },
         {
-            name: 'INC',
-            fullName: 'Indian National Congress',
-            seats: 28,
-            color: '#3b82f6',
+            name: 'AJUP',
+            fullName: 'All India Majlis-E-Ittehadul Muslimeen',
+            seats: 2,
+            color: '#8b5cf6',
+            status: 'trailing'
+        },
+        {
+            name: 'BGPM',
+            fullName: 'Bolo Gram Panchayat Movement',
+            seats: 1,
+            color: '#06b6d4',
+            status: 'trailing'
+        },
+        {
+            name: 'AISF',
+            fullName: 'All India Students Federation',
+            seats: 1,
+            color: '#ec4899',
             status: 'trailing'
         },
         {
             name: 'Others',
             fullName: 'Other Parties & Independents',
-            seats: 36,
+            seats: 19,
             color: '#6b7280',
             status: 'contesting'
         }
