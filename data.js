@@ -1,17 +1,18 @@
-// Election Data Collection with Real-Time API Integration
-// This file collects live data from various sources and provides it to the dashboard
+// Election Data Collection with Live ECI Web Scraping
+// Fetches real-time data from https://results.eci.gov.in/
 
 const electionData = {
     // Election metadata
     electionDate: '2026-05-04',
     state: 'West Bengal',
+    stateCode: 'S25', // West Bengal code for ECI URL
     totalSeats: 294,
     
     // Data sources for information collection
     dataSources: [
         {
             name: 'Election Commission of India (ECI)',
-            url: 'https://www.eci.gov.in/',
+            url: 'https://results.eci.gov.in/ResultAcGenMay2026/partywiseresult-S25.htm',
             type: 'Official Government Source'
         },
         {
@@ -22,7 +23,7 @@ const electionData = {
     ],
     
     // Party data with seat information
-    // This data will be updated in real-time from live sources
+    // This data will be updated in real-time from ECI
     parties: [
         {
             name: 'BJP',
@@ -91,7 +92,7 @@ const electionData = {
         return ((seats / this.totalSeats) * 100).toFixed(2);
     },
     
-    // Function to update party results (for live updates)
+    // Function to update party results
     updatePartySeats: function(partyName, seats) {
         const party = this.parties.find(p => p.name === partyName);
         if (party) {
@@ -127,27 +128,122 @@ const electionData = {
     }
 };
 
-// Function to fetch real-time data from multiple sources
+// Function to fetch and parse ECI results
+async function fetchECIResults() {
+    try {
+        console.log('🔄 Fetching live results from ECI...');
+        
+        const eciUrl = 'https://results.eci.gov.in/ResultAcGenMay2026/partywiseresult-S25.htm';
+        
+        // Use CORS proxy for browser compatibility
+        const corsProxy = 'https://corsproxy.io/?';
+        const proxyUrl = corsProxy + encodeURIComponent(eciUrl);
+        
+        const response = await fetch(proxyUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const html = await response.text();
+        console.log('✅ HTML received from ECI');
+        
+        // Parse the HTML
+        const results = parseECIHTML(html);
+        
+        if (results && results.length > 0) {
+            console.log('📊 Parsed results:', results);
+            return results;
+        }
+        
+        console.warn('⚠️ No results found in HTML');
+        return null;
+        
+    } catch (error) {
+        console.error('❌ Error fetching ECI results:', error.message);
+        return null;
+    }
+}
+
+// Parse ECI HTML response
+function parseECIHTML(html) {
+    try {
+        console.log('🔍 Parsing ECI HTML...');
+        
+        // Create a temporary DOM parser
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Find the results table
+        const tables = doc.querySelectorAll('table');
+        console.log(`Found ${tables.length} tables`);
+        
+        let results = [];
+        
+        // Look for party-wise results table
+        tables.forEach((table, tableIndex) => {
+            const rows = table.querySelectorAll('tr');
+            console.log(`Table ${tableIndex}: ${rows.length} rows`);
+            
+            rows.forEach((row, rowIndex) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const partyName = cells[0]?.textContent?.trim() || '';
+                    const seatsText = cells[1]?.textContent?.trim() || '';
+                    
+                    // Extract number from seats cell
+                    const seats = parseInt(seatsText) || 0;
+                    
+                    // Filter valid parties
+                    if (partyName && seats > 0) {
+                        console.log(`📍 Found: ${partyName} - ${seats} seats`);
+                        results.push({
+                            name: partyName,
+                            seats: seats
+                        });
+                    }
+                }
+            });
+        });
+        
+        return results.length > 0 ? results : null;
+        
+    } catch (error) {
+        console.error('Error parsing HTML:', error);
+        return null;
+    }
+}
+
+// Main function to fetch real-time data
 async function fetchRealTimeData() {
     try {
-        console.log('🔄 Fetching live election data from multiple sources...');
+        console.log('🚀 Starting real-time data fetch cycle...');
         
-        // Try to fetch from ECI official website via CORS proxy
-        const liveData = await fetchFromECI();
+        // Fetch from ECI
+        const eciResults = await fetchECIResults();
         
-        if (liveData) {
-            console.log('✅ Live data fetched successfully:', liveData);
-            return liveData;
+        if (eciResults && eciResults.length > 0) {
+            console.log('✅ Got live data from ECI, updating dashboard...');
+            
+            // Match party abbreviations and update
+            eciResults.forEach(result => {
+                const partyName = normalizePartyName(result.name);
+                if (partyName) {
+                    electionData.updatePartySeats(partyName, result.seats);
+                }
+            });
+            
+            console.log('✅ Dashboard updated with live ECI data');
+            return electionData;
         }
         
-        // If ECI fails, try Wikipedia
-        const wikiData = await fetchFromWikipedia();
-        if (wikiData) {
-            console.log('✅ Data fetched from Wikipedia:', wikiData);
-            return wikiData;
-        }
-        
-        console.warn('⚠️ All live sources unavailable, using local cached data');
+        console.warn('⚠️ Could not fetch live data, using cached data');
         return electionData;
         
     } catch (error) {
@@ -156,130 +252,40 @@ async function fetchRealTimeData() {
     }
 }
 
-// Fetch data from ECI website
-async function fetchFromECI() {
-    try {
-        console.log('📡 Attempting to fetch from ECI...');
-        
-        // Using CORS proxy to bypass CORS restrictions
-        const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-        const eciUrl = 'https://www.eci.gov.in/';
-        
-        const response = await fetch(corsProxy + eciUrl, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-        
-        if (response.ok) {
-            const html = await response.text();
-            // Parse HTML for election results (implementation depends on HTML structure)
-            const results = parseECIData(html);
-            if (results) {
-                return results;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.warn('⚠️ ECI fetch failed:', error.message);
-        return null;
-    }
-}
-
-// Fetch data from Wikipedia
-async function fetchFromWikipedia() {
-    try {
-        console.log('📡 Attempting to fetch from Wikipedia...');
-        
-        const wikiUrl = 'https://en.wikipedia.org/wiki/2026_West_Bengal_Legislative_Assembly_election';
-        const corsProxy = 'https://cors-anywhere.herokuapp.com/';
-        
-        const response = await fetch(corsProxy + wikiUrl, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const html = await response.text();
-            const results = parseWikipediaData(html);
-            if (results) {
-                return results;
-            }
-        }
-        return null;
-    } catch (error) {
-        console.warn('⚠️ Wikipedia fetch failed:', error.message);
-        return null;
-    }
-}
-
-// Parse ECI data from HTML (implement based on actual HTML structure)
-function parseECIData(html) {
-    try {
-        // This is a placeholder - actual parsing depends on ECI website structure
-        // Look for seat distribution in the HTML
-        console.log('🔍 Parsing ECI data...');
-        
-        // Example pattern matching (customize based on actual HTML)
-        const patterns = {
-            'BJP': /BJP.*?(\d+)/gi,
-            'AITC': /Trinamool|AITC.*?(\d+)/gi,
-            'CPI\(M\)': /CPI\(M\).*?(\d+)/gi
-        };
-        
-        // If successful parsing found
-        return null; // Return parsed data if found
-    } catch (error) {
-        console.error('Error parsing ECI data:', error);
-        return null;
-    }
-}
-
-// Parse Wikipedia data from HTML
-function parseWikipediaData(html) {
-    try {
-        console.log('🔍 Parsing Wikipedia data...');
-        
-        // This is a placeholder - actual parsing depends on Wikipedia table structure
-        // Look for results table in the Wikipedia HTML
-        
-        // Example: parse table with party names and seat counts
-        const tableRegex = /<table[^>]*>([\s\S]*?)<\/table>/gi;
-        const tables = html.match(tableRegex);
-        
-        if (tables && tables.length > 0) {
-            console.log('📊 Found results table');
-            // Parse table rows and extract party names and seats
-            // Implementation depends on specific table structure
-        }
-        
-        return null; // Return parsed data if found
-    } catch (error) {
-        console.error('Error parsing Wikipedia data:', error);
-        return null;
-    }
-}
-
-// Function to manually update data (for testing or admin interface)
-async function manualUpdateData(partyUpdates) {
-    console.log('📝 Applying manual data update:', partyUpdates);
-    electionData.updateMultipleParties(partyUpdates);
-    return electionData;
+// Normalize party names from ECI format
+function normalizePartyName(eciName) {
+    const nameMap = {
+        'BJP': 'BJP',
+        'BHARATIYA JANATA PARTY': 'BJP',
+        'AITC': 'AITC',
+        'ALL INDIA TRINAMOOL CONGRESS': 'AITC',
+        'CPIM': 'CPI(M)',
+        'CPI(M)': 'CPI(M)',
+        'COMMUNIST PARTY OF INDIA (MARXIST)': 'CPI(M)',
+        'AJUP': 'AJUP',
+        'AIMIM': 'AJUP',
+        'BGPM': 'BGPM',
+        'AISF': 'AISF'
+    };
+    
+    const normalized = eciName.toUpperCase().trim();
+    return nameMap[normalized] || null;
 }
 
 // Function to start continuous live updates
 function startLiveUpdates() {
-    console.log('🚀 Starting continuous live election updates...');
+    console.log('🎯 Starting continuous live election updates from ECI...');
+    console.log('⏱️ Updates every 10 seconds');
+    
+    // Initial fetch
+    fetchRealTimeData();
     
     // Update every 10 seconds
     setInterval(async () => {
         try {
-            const data = await fetchRealTimeData();
-            console.log('⏱️ Live data cycle completed at:', new Date().toLocaleTimeString());
+            await fetchRealTimeData();
+            const now = new Date();
+            console.log(`⏱️ Live data cycle completed at ${now.toLocaleTimeString()}`);
         } catch (error) {
             console.error('Error in live update cycle:', error);
         }
@@ -291,9 +297,8 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = { 
         electionData, 
         fetchRealTimeData,
-        fetchFromECI,
-        fetchFromWikipedia,
-        manualUpdateData,
+        fetchECIResults,
+        parseECIHTML,
         startLiveUpdates 
     };
 }
