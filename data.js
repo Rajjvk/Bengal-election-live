@@ -18,26 +18,6 @@ const electionData = {
             name: 'West Bengal Election Commission',
             url: 'https://wbsec.gov.in/',
             type: 'State Election Authority'
-        },
-        {
-            name: 'Exit Polls - NDTV',
-            url: 'https://www.ndtv.com/',
-            type: 'News Media'
-        },
-        {
-            name: 'Exit Polls - India Today',
-            url: 'https://www.indiatoday.in/',
-            type: 'News Media'
-        },
-        {
-            name: 'Exit Polls - News18',
-            url: 'https://www.news18.com/',
-            type: 'News Media'
-        },
-        {
-            name: 'Wikipedia Election Results',
-            url: 'https://en.wikipedia.org/wiki/2026_West_Bengal_Legislative_Assembly_election',
-            type: 'Crowdsourced Information'
         }
     ],
     
