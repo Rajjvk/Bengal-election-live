@@ -154,11 +154,13 @@ function renderDataSources() {
     });
 }
 
-// Live update function - Updates every 10 seconds continuously
+// Live update function - Continuous updates every 10 seconds
 function startLiveUpdates() {
-    // Update every 10 seconds (continuous updates)
+    // Update every 10 seconds continuously (no time restrictions)
     const updateInterval = setInterval(async () => {
         try {
+            console.log('🔄 Starting live update cycle...');
+            
             // Call to fetch real-time data from ECI
             await fetchRealTimeData();
             
@@ -166,9 +168,9 @@ function startLiveUpdates() {
             refreshDashboard();
             
             const now = new Date();
-            console.log('✅ Dashboard updated at', now.toLocaleTimeString());
+            console.log(`✅ Dashboard updated at ${now.toLocaleTimeString()}`);
         } catch (error) {
-            console.error('Error updating dashboard:', error);
+            console.error('❌ Error updating dashboard:', error);
         }
     }, 10000); // Update every 10 seconds
     
@@ -187,14 +189,14 @@ function refreshDashboard() {
     renderStatsPanel();
     renderResultsTable();
     
-    console.log('Dashboard refreshed');
+    console.log('🔄 Dashboard UI refreshed');
 }
 
 // Update specific party seats (for manual updates)
 function updatePartySeat(partyName, newSeats) {
     electionData.updatePartySeats(partyName, newSeats);
     refreshDashboard();
-    console.log(`Updated ${partyName} to ${newSeats} seats`);
+    console.log(`✏️ Updated ${partyName} to ${newSeats} seats`);
 }
 
 // Export for testing
