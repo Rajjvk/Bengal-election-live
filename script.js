@@ -154,28 +154,23 @@ function renderDataSources() {
     });
 }
 
-// Live update function
+// Live update function - Updates every 10 seconds continuously
 function startLiveUpdates() {
-    // Update every 30 seconds during election hours (8 AM to 6 PM)
+    // Update every 10 seconds (continuous updates)
     const updateInterval = setInterval(async () => {
-        const now = new Date();
-        const hours = now.getHours();
-        
-        // Only update during election hours
-        if (hours >= 8 && hours < 18) {
-            try {
-                // Call to fetch real-time data
-                await fetchRealTimeData();
-                
-                // Refresh all visualizations
-                refreshDashboard();
-                
-                console.log('Dashboard updated at', now.toLocaleTimeString());
-            } catch (error) {
-                console.error('Error updating dashboard:', error);
-            }
+        try {
+            // Call to fetch real-time data from ECI
+            await fetchRealTimeData();
+            
+            // Refresh all visualizations
+            refreshDashboard();
+            
+            const now = new Date();
+            console.log('✅ Dashboard updated at', now.toLocaleTimeString());
+        } catch (error) {
+            console.error('Error updating dashboard:', error);
         }
-    }, 30000); // Update every 30 seconds
+    }, 10000); // Update every 10 seconds
     
     return updateInterval;
 }
